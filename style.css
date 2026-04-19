@@ -1,0 +1,83 @@
+body {
+    margin: 0;
+    background-color: #f4f1ea;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+#notebook {
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+.paper-grid {
+    width: 100%;
+    max-width: 400px;
+    background-color: #fff;
+    background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+    background-size: 20px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-radius: 5px;
+    position: relative;
+    padding: 15px;
+    height: fit-content; /* 關鍵：讓高度對齊內容 */
+    align-self: flex-start; /* 靠上對齊 */
+}
+
+.quadrant-background {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    background-color: #ddd;
+    height: 360px;
+    margin-top: 10px;
+}
+
+.quad { background: #fff; position: relative; }
+.quad span { position: absolute; bottom: 5px; right: 5px; font-size: 10px; color: #ccc; }
+
+#sticker-canvas {
+    position: absolute;
+    top: 55px; /* 避開標題 */
+    left: 20px;
+    right: 20px;
+    height: 400px;
+    z-index: 100;
+    pointer-events: none; /* 讓底層不擋點擊，但子元素會設為 auto */
+}
+
+.active-sticker {
+    position: absolute;
+    z-index: 100;
+    cursor: grab;
+    pointer-events: auto; /* 恢復貼紙的點擊能力 */
+    user-select: none;
+    touch-action: none;
+}
+
+.task-card {
+    background: white;
+    border-left: 5px solid #339933;
+    padding: 8px 12px;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.1);
+    min-width: 80px;
+}
+
+#sticker-tray {
+    background: white;
+    padding: 15px;
+    border-top: 1px solid #ddd;
+}
+
+.tray-inner { display: flex; justify-content: center; gap: 15px; }
+.sticker-item { 
+    width: 50px; height: 50px; background: #eee; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
