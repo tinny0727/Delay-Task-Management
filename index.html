@@ -16,10 +16,8 @@
                 <div class="quad q2"><span>重要 / 不緊急</span></div>
                 <div class="quad q3"><span>不重要 / 緊急</span></div>
                 <div class="quad q4"><span>不重要 / 不緊急</span></div>
-                <div class="type-btn work" onclick="createTaskByType('工作', '#4A90E2')">💻 工作</div>
-        <div class="type-btn urgent" onclick="createTaskByType('急件', '#E74C3C')">🔥 急件</div>
-        <div class="type-btn life" onclick="createTaskByType('生活', '#F1C40F')">🏠 生活</div>
-        <div class="type-btn health" onclick="createTaskByType('休息', '#2ECC71')">🌿 休息</div>
+              
+       
             </div>
 
             <div id="sticker-canvas"></div>
@@ -29,9 +27,22 @@
 
     <div id="sticker-tray">
         <div class="tray-inner">
-            <div class="sticker-item" onclick="createSticker('high')">✨</div>
-            <div class="sticker-item" onclick="createSticker('mid')">🌱</div>
-            <div class="sticker-item" onclick="createSticker('low')">☁️</div>
+            <div class="sticker-item" onclick="createSticker('high')">
+            <img src="分心.png" style="width: 30px; height: 30px; object-fit: contain;">
+        </div>
+              <div class="sticker-item" onclick="createSticker('anxi')">
+            <img src="焦慮.png" style="width: 30px; height: 30px; object-fit: contain;">
+        </div>
+         <div class="sticker-item" onclick="createSticker('lopie')">
+            <img src="內耗.png" style="width: 30px; height: 30px; object-fit: contain;">
+        </div>
+        <div class="sticker-item" onclick="createSticker('avoid')">
+            <img src="逃避.png" style="width: 30px; height: 30px; object-fit: contain;">
+        </div>
+         <div class="sticker-item" onclick="createSticker('perfy')">
+            <img src="完美.png" style="width: 30px; height: 30px; object-fit: contain;">
+        </div>
+           
             <div class="sticker-item task-btn" onclick="createTaskSticker()">＋ 任務</div>
         </div>
     </div>

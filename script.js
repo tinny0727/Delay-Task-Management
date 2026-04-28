@@ -44,50 +44,71 @@ for (let i = 0; i < count; i++) {
 let activeElement = null;
 let offset = { x: 0, y: 0 };
 
-// 1. 生成任務貼紙
+// --- 1. 自行輸入任務的函式 (找回來的！) ---
 function createTaskSticker() {
     const text = prompt("請輸入任務內容：");
-    if (!text) return;
-
-    const canvas = document.getElementById('sticker-canvas');
-    const sticker = document.createElement('div');
-    sticker.className = 'active-sticker task-card';
-    sticker.innerText = text;
-    
-    // 初始位置
-    sticker.style.left = '50px';
-    sticker.style.top = '50px';
-
-    addDragListeners(sticker);
-    canvas.appendChild(sticker);
+    if (!text || text.trim() === "") return;
+    // 呼叫下方的統一樣式函式，給它一個預設顏色（例如灰色）
+    createTaskByType(text, '#666');
 }
+
+// --- 2. 預設類型任務標籤 (獨立出來) ---
 function createTaskByType(typeText, color) {
     const canvas = document.getElementById('sticker-canvas');
+    if (!canvas) return;
+
     const sticker = document.createElement('div');
     sticker.className = 'active-sticker task-card';
     
-    // 注入內容與自訂顏色
     sticker.innerHTML = `
         <div class="sticker-text" contenteditable="true">${typeText}</div>
     `;
     sticker.style.borderLeft = `6px solid ${color}`;
     
-    // 隨機在中間稍微偏左的位置生成，避免全部疊在一起
-    const randomOffset = Math.random() * 30;
+    // 隨機初始位置
+    const randomOffset = Math.random() * 50;
     sticker.style.left = (50 + randomOffset) + 'px';
     sticker.style.top = (50 + randomOffset) + 'px';
 
-  
+    canvas.appendChild(sticker);
+    addDragListeners(sticker);
+
+    // 處理編輯文字時不觸發拖拽
+    const textElement = sticker.querySelector('.sticker-text');
+    textElement.addEventListener('mousedown', (e) => e.stopPropagation());
+    textElement.addEventListener('touchstart', (e) => e.stopPropagation());
 }
-// 2. 生成能量貼紙
+
+// --- 3. PNG/Emoji 能量貼紙 (修正結構) ---
 function createSticker(type) {
     const canvas = document.getElementById('sticker-canvas');
+    if (!canvas) return;
+
     const sticker = document.createElement('div');
     sticker.className = 'active-sticker';
     
-    const icons = { high: '✨', mid: '🌱', low: '☁️', depleted: '🪨' };
-    sticker.innerText = icons[type];
-    sticker.style.fontSize = '30px';
+    const icons = { 
+        high: '分心.png',
+        anxi: '焦慮.png',
+        lopie: '內耗.png',
+        avoid: '逃避.png', 
+        perfy: '完美.png', 
+        
+    };
+
+    const content = icons[type] || type;
+
+    if (content.endsWith('.png') || content.endsWith('.jpg')) {
+        const img = document.createElement('img');
+        img.src = content;
+        img.style.width = '55px'; 
+        img.style.pointerEvents = 'none'; 
+        sticker.appendChild(img);
+    } else {
+        sticker.innerText = content;
+        sticker.style.fontSize = '35px';
+    }
+
     sticker.style.left = '100px';
     sticker.style.top = '100px';
 
@@ -95,20 +116,27 @@ function createSticker(type) {
     canvas.appendChild(sticker);
 }
 
-// 3. 核心：拖拽邏輯 (這部分你之前漏掉了)
+// --- 4. 核心：拖拽邏輯 ---
 function addDragListeners(el) {
     el.addEventListener('mousedown', startDragging);
     el.addEventListener('touchstart', startDragging, { passive: false });
 }
 
 function startDragging(e) {
-    activeElement = e.target;
+    // 如果正在編輯文字，不要觸發拖拽
+    if (e.target.contentEditable === "true") return;
+
+    // 確保抓到的是貼紙容器本體
+    activeElement = e.currentTarget; 
+    
     const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
 
     const rect = activeElement.getBoundingClientRect();
     offset.x = clientX - rect.left;
     offset.y = clientY - rect.top;
+
+    activeElement.style.zIndex = 1000; // 拖動時置頂
 
     document.addEventListener('mousemove', drag);
     document.addEventListener('touchmove', drag, { passive: false });
@@ -121,12 +149,13 @@ function drag(e) {
     const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
     const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
 
-    const canvas = document.getElementById('sticker-canvas').getBoundingClientRect();
-    activeElement.style.left = (clientX - canvas.left - offset.x) + 'px';
-    activeElement.style.top = (clientY - canvas.top - offset.y) + 'px';
+    const canvasRect = document.getElementById('sticker-canvas').getBoundingClientRect();
+    activeElement.style.left = (clientX - canvasRect.left - offset.x) + 'px';
+    activeElement.style.top = (clientY - canvasRect.top - offset.y) + 'px';
 }
 
 function stopDragging() {
+    if (activeElement) activeElement.style.zIndex = 100;
     activeElement = null;
     document.removeEventListener('mousemove', drag);
     document.removeEventListener('touchmove', drag);

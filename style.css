@@ -85,7 +85,7 @@ body {
 }
 
 .quad { 
-    background: rgba(255, 255, 255, 0.53); /* 讓象限本身也是半透明 */
+    background: rgba(0, 0, 0, 0.53); /* 讓象限本身也是半透明 */
     position: relative; 
 }
 
