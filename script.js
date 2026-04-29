@@ -92,7 +92,7 @@ function createSticker(type) {
         anxi: '焦慮.png',
         lopie: '內耗.png',
         avoid: '逃避.png', 
-        perfy: '完美.png', 
+        perfy: '完美.PNG', 
         
     };
 
