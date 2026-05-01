@@ -1,4 +1,7 @@
 // 移除舊的容器避免重複
+// 建立一個簡單的「啵」聲音頻
+const trashAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'); 
+// 或者找一個你喜歡的音效網址替換
 const oldContainer = document.getElementById('bg-glitter-container');
 if (oldContainer) oldContainer.remove();
 
@@ -80,42 +83,108 @@ function createTaskByType(typeText, color) {
 }
 
 // --- 3. PNG/Emoji 能量貼紙 (修正結構) ---
-function createSticker(type) {
-    const canvas = document.getElementById('sticker-canvas');
-    if (!canvas) return;
+// --- 1. 修改：新增可選顏色的函式 ---
+// 修改後的顏色標籤函式
+// --- 改良版：數字、文字、隨機通吃的選色函式 ---
+function createTaskSticker() {
+    const text = prompt("請輸入任務內容：");
+    if (!text || text.trim() === "") return;
 
-    const sticker = document.createElement('div');
-    sticker.className = 'active-sticker';
-    
-    const icons = { 
-        high: '分心.png',
-        anxi: '焦慮.png',
-        lopie: '內耗.png',
-        avoid: '逃避.png', 
-        perfy: 'IP(1).png'
-        
+    // 定義顏色庫
+    const colorMap = {
+        'R': { name: '紅色', value: '#ff6b6b' },
+        'B': { name: '藍色', value: '#4dabf7' },
+        'Y': { name: '金色', value: '#ffd43b' },
+        'P': { name: '紫色', value: '#be4bdb' },
+        'G': { name: '嫩綠', value: '#8ce99a' },
+       
     };
 
-    const content = icons[type] || type;
+    // 建立提示文字
+    let colorHint = "請選擇標籤顏色：\n";
+    for (let key in colorMap) {
+        colorHint += `${key}. ${colorMap[key].name}  `;
+    }
+    colorHint += "\n(直接輸入數字，留空則隨機選色)";
 
-    if (content.endsWith('.png') || content.endsWith('.jpg')) {
-        const img = document.createElement('img');
-        img.src = content;
-        img.style.width = '55px'; 
-        img.style.pointerEvents = 'none'; 
-        sticker.appendChild(img);
+    const choice = prompt(colorHint);
+    
+    let finalColor;
+    if (colorMap[choice]) {
+        // 使用者選了對應數字
+        finalColor = colorMap[choice].value;
+    } else if (!choice || choice.trim() === "") {
+        // 留空則從現有顏色隨機選一個
+        const keys = Object.keys(colorMap);
+        finalColor = colorMap[keys[Math.floor(Math.random() * keys.length)]].value;
     } else {
-        sticker.innerText = content;
-        sticker.style.fontSize = '35px';
+        // 如果使用者隨便打，就讓它變成灰色或自定義顏色
+        finalColor = '#666'; 
     }
 
-    sticker.style.left = '100px';
-    sticker.style.top = '100px';
+    createTaskByType(text, finalColor);
+}
+// --- 4. 核心：修改拖拽邏輯以支援回收 ---
+function stopDragging(e) {
+    if (!activeElement) return;
 
-    addDragListeners(sticker);
-    canvas.appendChild(sticker);
+    const clientX = e.type === 'touchend' ? e.changedTouches[0].clientX : e.clientY;
+    const clientY = e.type === 'touchend' ? e.changedTouches[0].clientY : e.clientY;
+
+    activeElement.style.pointerEvents = 'none'; 
+    const dropTarget = document.elementFromPoint(clientX, clientY);
+    activeElement.style.pointerEvents = 'auto'; 
+
+    const trashCan = dropTarget ? dropTarget.closest('#trash-can') : null;
+
+    if (trashCan) {
+        // --- 播放音效 ---
+        trashAudio.currentTime = 0; // 每次重頭播放，連續丟才不會沒聲
+        trashAudio.play().catch(err => console.log("聲音播放失敗：", err));
+
+        // --- 消失動畫 ---
+        activeElement.style.transition = 'all 0.2s cubic-bezier(0.6, -0.28, 0.735, 0.045)';
+        activeElement.style.transform = 'scale(0) translateY(50px) rotate(30deg)';
+        activeElement.style.opacity = '0';
+        
+        const target = activeElement;
+        setTimeout(() => target.remove(), 250);
+        
+        trashCan.classList.remove('hover');
+    }
+
+
+
+    if (activeElement) activeElement.style.zIndex = 100;
+    activeElement = null;
+    document.removeEventListener('mousemove', drag);
+    document.removeEventListener('touchmove', drag);
+    document.removeEventListener('mouseup', stopDragging);
+    document.removeEventListener('touchend', stopDragging);
 }
 
+// 在 drag 函式中加入視覺反饋
+function drag(e) {
+    if (!activeElement) return;
+    const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+    const canvasRect = document.getElementById('sticker-canvas').getBoundingClientRect();
+    activeElement.style.left = (clientX - canvasRect.left - offset.x) + 'px';
+    activeElement.style.top = (clientY - canvasRect.top - offset.y) + 'px';
+
+    // 檢查是否碰到垃圾桶 (增加視覺效果)
+    const trashCan = document.getElementById('trash-can');
+    if (trashCan) {
+        const trashRect = trashCan.getBoundingClientRect();
+        if (clientX > trashRect.left && clientX < trashRect.right &&
+            clientY > trashRect.top && clientY < trashRect.bottom) {
+            trashCan.classList.add('hover');
+        } else {
+            trashCan.classList.remove('hover');
+        }
+    }
+}
 // --- 4. 核心：拖拽邏輯 ---
 function addDragListeners(el) {
     el.addEventListener('mousedown', startDragging);
@@ -154,9 +223,37 @@ function drag(e) {
     activeElement.style.top = (clientY - canvasRect.top - offset.y) + 'px';
 }
 
-function stopDragging() {
-    if (activeElement) activeElement.style.zIndex = 100;
+function stopDragging(e) {
+    if (!activeElement) return;
+
+    // 取得放開位置的座標
+    const clientX = e.type === 'touchend' ? e.changedTouches[0].clientX : e.clientX;
+    const clientY = e.type === 'touchend' ? e.changedTouches[0].clientY : e.clientY;
+
+    // 先暫時隱藏被拖動的元素，否則 elementFromPoint 永遠只會抓到標籤自己
+    activeElement.style.display = 'none';
+    const dropTarget = document.elementFromPoint(clientX, clientY);
+    activeElement.style.display = 'block';
+
+    // 檢查底下是不是垃圾桶 (透過 ID 或 Class)
+    const trashCan = dropTarget ? dropTarget.closest('#trash-can') : null;
+
+    if (trashCan) {
+        // 播放一點縮小動畫然後移除
+        activeElement.style.transition = 'all 0.2s';
+        activeElement.style.transform = 'scale(0) rotate(20deg)';
+        activeElement.style.opacity = '0';
+        
+        const targetToRemove = activeElement;
+        setTimeout(() => targetToRemove.remove(), 200);
+        trashCan.classList.remove('hover');
+    } else {
+        activeElement.style.zIndex = 100;
+    }
+
     activeElement = null;
     document.removeEventListener('mousemove', drag);
     document.removeEventListener('touchmove', drag);
+    document.removeEventListener('mouseup', stopDragging);
+    document.removeEventListener('touchend', stopDragging);
 }
