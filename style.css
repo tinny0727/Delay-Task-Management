@@ -102,6 +102,7 @@ body {
     pointer-events: none;
 }
 
+
 .active-sticker {
     position: absolute;
     z-index: 100;
