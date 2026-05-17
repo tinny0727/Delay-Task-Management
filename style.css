@@ -211,3 +211,23 @@ body {
     width: 50px; height: 50px; background: #ffffff; border-radius: 50%;font-size: small;
     display: flex; align-items: center; justify-content: center; cursor: pointer;
 }
+.game-back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  cursor: pointer;
+  z-index: 9999; /* 確保按鈕在遊戲畫面最上層 */
+  backdrop-filter: blur(5px);
+  transition: 0.3s;
+}
+
+.game-back-btn:hover {
+  background: rgba(76, 255, 106, 0.2);
+  border-color: #4cff6a;
+  color: #4cff6a;
+}

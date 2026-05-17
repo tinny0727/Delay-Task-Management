@@ -1,3 +1,6 @@
+function backToHome() {
+    window.location.href = "https://tinny0727.github.io/Delay-home/"; 
+}
 // 1. 初始化資源與背景
 const trashAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'); 
 
